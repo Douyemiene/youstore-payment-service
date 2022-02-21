@@ -4,7 +4,7 @@ import { IPayment } from "../database/models/Payments";
 
 export interface IPaymentRepo {
   save(payment: IPaymentProps): Promise<string>;
-  getPaymentsByRef(reference: string): Promise<Array<IPayment>>;
+  getPaymentByRef(reference: string): Promise<Array<IPayment>>;
   //getPaymentById(id: string): Promise<IPayment | null>;
   findByIdAndUpdate(id: string, paymentStatus: boolean): Promise<void>;
 }
@@ -22,7 +22,7 @@ export class PaymentRepo implements IPaymentRepo {
     return _id.toString();
   }
 
-  async getPaymentsByRef(reference: string): Promise<Array<IPayment>> {
+  async getPaymentByRef(reference: string): Promise<Array<IPayment>> {
     const payments = await this.payments.find({ reference }).exec();
     return payments;
   }
