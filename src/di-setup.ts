@@ -6,9 +6,9 @@ import {
   InjectionMode,
   Lifetime,
 } from "awilix";
-import Orders from "./infra/database/models/Orders";
+import Payments from "./infra/database/models/payments";
 import { connectDB } from "./infra/database/mongoose";
-import OrderController from "./interfaces/http/controllers/orderController";
+import PaymentController from "./interfaces/http/controllers/paymentController";
 import Messenger from "./infra/messaging/messenger";
 //import { Server } from "./interfaces/http/routes/index";
 
@@ -17,8 +17,8 @@ const container = createContainer({
 });
 
 container.register({
-  orderModel: asValue(Orders),
-  orderController: asClass(OrderController),
+  paymentModel: asValue(Payments),
+  paymentController: asClass(PaymentController),
   messenger: asClass(Messenger, { lifetime: Lifetime.SINGLETON }),
   // Infrastructure layer
   connectDB: asFunction(connectDB),

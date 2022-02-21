@@ -8,7 +8,7 @@ app.use(express.json());
 app.use("/payments", PaymentRouter);
 
 const { messenger, paymentUseCase } = container.cradle;
-console.log("susee", paymentUseCase);
+
 app.post("/", async (req, res) => {
   const body = req.body;
   try {
@@ -22,6 +22,7 @@ messenger.createChannel().then(() => {
   //connect database
   connectDB();
   //listen for requests
+  messenger.consumeOrderCreated();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
