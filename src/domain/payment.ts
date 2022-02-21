@@ -1,4 +1,8 @@
-export interface IPaymentProps {}
+export interface IPaymentProps {
+  reference: string;
+  status: boolean;
+  orderid: string;
+}
 
 export class Payment {
   readonly props: IPaymentProps;

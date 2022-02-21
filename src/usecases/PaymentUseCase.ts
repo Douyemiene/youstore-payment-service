@@ -2,14 +2,14 @@ import { IPaymentRepo } from "../infra/repositories/payments";
 import { IPaymentProps, Payment } from "../domain/payment";
 import { IPayment } from "../infra/database/models/payments";
 
-export class paymentUsecase {
+export class PaymentUsecase {
   private paymentRepo: IPaymentRepo;
 
   constructor({ payments }: { payments: IPaymentRepo }) {
     this.paymentRepo = payments;
   }
 
-  async createpayment(payment: IPaymentProps): Promise<string> {
+  async createPayment(payment: IPaymentProps): Promise<string> {
     if (!payment.reference) {
       throw new Error();
     }
@@ -37,4 +37,4 @@ export class paymentUsecase {
   }
 }
 
-export default paymentUsecase;
+export default PaymentUsecase;

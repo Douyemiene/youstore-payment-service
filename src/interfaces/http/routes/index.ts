@@ -1,22 +1,26 @@
 import express from "express";
 import { connectDB } from "../../../infra/database/mongoose";
-import { OrderRouter } from "./orders";
+import { PaymentRouter } from "./payments";
 import container from "../../../di-setup";
 
 const app = express();
 app.use(express.json());
-app.use("/orders", OrderRouter);
+app.use("/payments", PaymentRouter);
 
-const { messenger } = container.cradle;
-
+const { messenger, paymentUseCase } = container.cradle;
+console.log("susee", paymentUseCase);
+app.post("/", async (req, res) => {
+  const body = req.body;
+  try {
+    const data = await paymentUseCase.createPayment({ ...body, status: null });
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    res.status(200).json({ success: true, err });
+  }
+});
 messenger.createChannel().then(() => {
   //connect database
   connectDB();
-  //consume events
-  // messenger.assertQueue("payment_success");
-  // messenger.assertQueue("payment_failure");
-  messenger.consumePaymentSuccess();
-  messenger.consumePaymentFailure();
   //listen for requests
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
