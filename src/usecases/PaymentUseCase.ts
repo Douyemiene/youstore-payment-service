@@ -10,9 +10,6 @@ export class PaymentUsecase {
   }
 
   async createPayment(payment: IPaymentProps): Promise<string> {
-    if (!payment.reference) {
-      throw new Error();
-    }
     const paymentToSave = Payment.create(payment).props;
     const id = this.paymentRepo.save(paymentToSave);
     return id;
@@ -32,8 +29,12 @@ export class PaymentUsecase {
     reference: string,
     status: boolean
   ): Promise<void> {
-    console.log("update uscase");
-    const payment = await this.paymentRepo.findByIdAndUpdate(reference, status);
+    //console.log("update uscase");
+    const payment = await this.paymentRepo.findByRefAndUpdate(
+      reference,
+      status
+    );
+    //.log("update finished");
   }
 }
 

@@ -7,6 +7,7 @@ const { paymentController } = container.cradle;
 
 const PaymentRouter = Router();
 
+// /payment-
 PaymentRouter.post("/paystack-webhook", (req: Request, res: Response) =>
   paymentController.consumePaystackEvent(req, res)
 );

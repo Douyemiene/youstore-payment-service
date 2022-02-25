@@ -18,6 +18,7 @@ app.post("/", async (req, res) => {
     res.status(200).json({ success: true, err });
   }
 });
+
 messenger.createChannel().then(() => {
   //connect database
   connectDB();

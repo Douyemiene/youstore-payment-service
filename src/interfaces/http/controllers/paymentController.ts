@@ -6,7 +6,7 @@ import crypto from "crypto";
 export class PaymentController {
   paymentUseCase: PaymentUseCase;
   messenger: IMessenger;
-
+  //hey
   constructor({
     paymentUseCase,
     messenger,
@@ -27,13 +27,14 @@ export class PaymentController {
     if (hash == req.headers["x-paystack-signature"]) {
       var { event } = req.body;
       if ((event = "charge.success")) {
-        //send a 200 resp if what you did was successful
-        const ref = req.body.data.response;
+        const ref = req.body.data.reference;
         try {
           await this.paymentUseCase.findByRefAndUpdateStatus(ref, true);
-          res.status(200);
+          this.messenger.assertQueue("payment_success");
+          this.messenger.sendToQueue("payment_success", { ref });
+          res.status(200).send({ success: true });
         } catch {
-          res.status(400);
+          res.status(400).send({ success: false });
         }
       }
     }

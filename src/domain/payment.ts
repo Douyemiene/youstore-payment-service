@@ -1,7 +1,6 @@
 export interface IPaymentProps {
   reference: string;
-  status: boolean;
-  orderid: string;
+  status: boolean | null;
 }
 
 export class Payment {

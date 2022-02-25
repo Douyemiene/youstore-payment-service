@@ -29,7 +29,7 @@ container.register({
 container.loadModules(
   [
     [
-      "infra/repositories/*.ts",
+      "infra/repositories/*.js",
       {
         lifetime: Lifetime.SCOPED,
         register: asClass,
@@ -48,7 +48,7 @@ container.loadModules(
 container.loadModules(
   [
     [
-      "usecases/*.ts",
+      "usecases/*.js",
       {
         lifetime: Lifetime.SCOPED,
         register: asClass,

@@ -29,6 +29,27 @@ export class Messenger implements IMessenger {
   sendToQueue(queue: string, content: Object): void {
     this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(content)));
   }
+
+  async consumeOrderCreated() {
+    this.channel.consume(
+      "order_created",
+      (msg: Message | null) => {
+        if (msg) {
+          const data = JSON.parse(msg.content.toString());
+          console.log("id in order_created", data.orderID);
+          try {
+            this.paymentUseCase.createPayment({
+              status: null,
+              reference: data.orderID,
+            });
+          } catch (err) {
+            console.log("err", err);
+          }
+        }
+      },
+      { noAck: true }
+    );
+  }
 }
 
 export default Messenger;

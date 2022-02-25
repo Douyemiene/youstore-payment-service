@@ -1,11 +1,12 @@
 {
-  "name": "order-service",
+  "name": "paystack-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "node ./src/index.js",
     "dev": "nodemon",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,7 +22,8 @@
     "express-joi-validation": "^5.0.1",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.1.8"
+    "mongoose": "^6.1.8",
+    "ts-node": "^10.4.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.8.2",
