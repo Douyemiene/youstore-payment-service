@@ -9,20 +9,21 @@ app.use("/payments", PaymentRouter);
 
 const { messenger, paymentUseCase } = container.cradle;
 
-app.post("/", async (req, res) => {
-  const body = req.body;
-  try {
-    const data = await paymentUseCase.createPayment({ ...body, status: null });
-    res.status(200).json({ success: true, data });
-  } catch (err) {
-    res.status(200).json({ success: true, err });
-  }
-});
+// app.post("/", async (req, res) => {
+//   const body = req.body;
+//   try {
+//     const data = await paymentUseCase.createPayment({ ...body, status: null });
+//     res.status(200).json({ success: true, data });
+//   } catch (err) {
+//     res.status(200).json({ success: true, err });
+//   }
+// });
 
 messenger.createChannel().then(() => {
   //connect database
   connectDB();
   //listen for requests
+  messenger.assertQueue("order_created");
   messenger.consumeOrderCreated();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {

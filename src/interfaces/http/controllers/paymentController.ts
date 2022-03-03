@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { IMessenger } from "../../../infra/messaging/messenger";
 import PaymentUseCase from "../../../usecases/PaymentUseCase";
 import crypto from "crypto";
+const axios = require("axios").default;
 
 export class PaymentController {
   paymentUseCase: PaymentUseCase;
@@ -16,6 +17,47 @@ export class PaymentController {
   }) {
     this.paymentUseCase = paymentUseCase;
     this.messenger = messenger;
+  }
+
+  async verifyPayment(req: Request, res: Response) {
+    const reference = req.params.reference;
+    await axios
+      .get(`https://api.paystack.co/transaction/verify/${reference}`, {
+        headers: {
+          authorization:
+            "Bearer sk_test_55ceccf870fc585f49df71a6decd01ff457c583c",
+          "content-type": "application/json",
+          "cache-control": "no-cache",
+        },
+      })
+      .then(async (result) => {
+        const { status, reference } = result.data.data;
+        // console.log("res", status);
+        // console.log("res", reference);
+        if (status === "success") {
+          await this.paymentUseCase.findByRefAndUpdateStatus(reference, true);
+          res.json({
+            success: true,
+            message: "Payment was successfully processed",
+            data: reference,
+          });
+        } else {
+          //status == 'failed'
+          console.log("failure", status);
+          await this.paymentUseCase.findByRefAndUpdateStatus(reference, false);
+          this.messenger.assertQueue("payment_failure");
+          this.messenger.sendToQueue("payment_failure", { ref: reference });
+
+          res.json({
+            success: false,
+            message: "Payment was not processed successfully",
+            data: reference,
+          });
+        }
+      })
+      .catch((err) => {
+        res.json({ success: false, error: "Payment verification failed." });
+      });
   }
 
   async consumePaystackEvent(req: Request, res: Response): Promise<void> {

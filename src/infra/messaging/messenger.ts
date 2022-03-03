@@ -31,12 +31,12 @@ export class Messenger implements IMessenger {
   }
 
   async consumeOrderCreated() {
+    //console.log("consume order_created");
     this.channel.consume(
       "order_created",
       (msg: Message | null) => {
         if (msg) {
           const data = JSON.parse(msg.content.toString());
-          console.log("id in order_created", data.orderID);
           try {
             this.paymentUseCase.createPayment({
               status: null,
