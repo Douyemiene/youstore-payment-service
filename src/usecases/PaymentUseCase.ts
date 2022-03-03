@@ -15,10 +15,10 @@ export class PaymentUsecase {
     return id;
   }
 
-  // async getpaymentById(id: string): Promise<IPayment | null> {
-  //   const payment = await this.paymentRepo.getPaymentById(id);
-  //   return payment;
-  // }
+  async getpaymentById(id: string): Promise<IPayment | null> {
+    const payment = await this.paymentRepo.getPaymentById(id);
+    return payment;
+  }
 
   async getpaymentByRef(id: string): Promise<IPayment | null> {
     const payment = await this.paymentRepo.getPaymentByRef(id);

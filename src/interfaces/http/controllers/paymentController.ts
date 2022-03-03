@@ -81,6 +81,26 @@ export class PaymentController {
       }
     }
   }
+
+  async getpaymentById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    try {
+      const order = await this.paymentUseCase.getpaymentById(id);
+      res.status(200).json({ success: true, data: order });
+    } catch ({ name, message }) {
+      res.status(404).json({ success: false, data: null });
+    }
+  }
+
+  async getpaymentByRef(req: Request, res: Response): Promise<void> {
+    const { reference } = req.params;
+    try {
+      const order = await this.paymentUseCase.getpaymentByRef(reference);
+      res.status(200).json({ success: true, data: order });
+    } catch ({ name, message }) {
+      res.status(404).json({ success: false, data: null });
+    }
+  }
 }
 
 export default PaymentController;

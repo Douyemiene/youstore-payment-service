@@ -5,7 +5,7 @@ import { IPayment } from "../database/models/payments";
 export interface IPaymentRepo {
   save(payment: IPaymentProps): Promise<string>;
   getPaymentByRef(reference: string): Promise<IPayment | null>;
-  //getPaymentById(id: string): Promise<IPayment | null>;
+  getPaymentById(id: string): Promise<IPayment | null>;
   findByRefAndUpdate(id: string, paymentStatus: boolean): Promise<void>;
 }
 
@@ -27,10 +27,10 @@ export class PaymentRepo implements IPaymentRepo {
     return payment;
   }
 
-  // async getPaymentById(id: string): Promise<IPayment | null> {
-  //   const payment = await this.payments.findById(id).exec();
-  //   return payment;
-  // }
+  async getPaymentById(id: string): Promise<IPayment | null> {
+    const payment = await this.payments.findById(id).exec();
+    return payment;
+  }
 
   async findByRefAndUpdate(reference: string, status: boolean): Promise<void> {
     //an array?
