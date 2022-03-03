@@ -66,6 +66,7 @@ export class PaymentController {
       .createHmac("sha512", secret)
       .update(JSON.stringify(req.body))
       .digest("hex");
+    console.log("hash", hash);
     if (hash == req.headers["x-paystack-signature"]) {
       var { event } = req.body;
       if ((event = "charge.success")) {
