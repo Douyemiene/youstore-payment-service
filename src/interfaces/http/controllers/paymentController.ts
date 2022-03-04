@@ -98,7 +98,7 @@ export class PaymentController {
     try {
       const order = await this.paymentUseCase.getpaymentByRef(reference);
       if (!order) {
-        res.status(200).json({ success: true, data: null });
+        res.status(404).json({ success: true, data: null });
       }
       res.status(200).json({ success: true, data: order });
     } catch ({ name, message }) {
