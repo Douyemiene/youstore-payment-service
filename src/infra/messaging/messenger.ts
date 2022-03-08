@@ -1,5 +1,6 @@
 import amqp, { Channel, Connection, Message } from "amqplib";
 import PaymentUseCase from "../../usecases/PaymentUseCase";
+import { Status } from "../../domain/payment";
 
 export interface IMessenger {
   createChannel(): Promise<void>;
@@ -31,7 +32,6 @@ export class Messenger implements IMessenger {
   }
 
   async consumeOrderCreated() {
-    //console.log("consume order_created");
     this.channel.consume(
       "order_created",
       (msg: Message | null) => {
@@ -39,8 +39,9 @@ export class Messenger implements IMessenger {
           const data = JSON.parse(msg.content.toString());
           try {
             this.paymentUseCase.createPayment({
-              status: null,
+              status: Status.PENDING,
               reference: data.orderID,
+              amount: data.amount,
             });
           } catch (err) {
             console.log("err", err);

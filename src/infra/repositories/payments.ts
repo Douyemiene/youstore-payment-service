@@ -1,12 +1,12 @@
 import { Model } from "mongoose";
-import { IPaymentProps } from "../../domain/payment";
+import { IPaymentProps, Status } from "../../domain/payment";
 import { IPayment } from "../database/models/payments";
 
 export interface IPaymentRepo {
   save(payment: IPaymentProps): Promise<string>;
   getPaymentByRef(reference: string): Promise<IPayment | null>;
   getPaymentById(id: string): Promise<IPayment | null>;
-  findByRefAndUpdate(id: string, paymentStatus: boolean): Promise<void>;
+  findByRefAndUpdate(id: string, paymentStatus: Status): Promise<void>;
 }
 
 export class PaymentRepo implements IPaymentRepo {
@@ -32,7 +32,7 @@ export class PaymentRepo implements IPaymentRepo {
     return payment;
   }
 
-  async findByRefAndUpdate(reference: string, status: boolean): Promise<void> {
+  async findByRefAndUpdate(reference: string, status: Status): Promise<void> {
     //an array?
     try {
       const payment = await this.payments.findOneAndUpdate(

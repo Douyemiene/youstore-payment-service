@@ -1,13 +1,16 @@
 import * as mongoose from "mongoose";
+import { Status } from "../../../domain/payment";
 
 export interface IPayment {
   reference: string;
-  status: boolean | null;
+  status: Status;
+  amount: number;
 }
 
 const PaymentSchema = new mongoose.Schema<IPayment>({
   reference: String,
-  status: Boolean,
+  status: String,
+  amount: Number,
 });
 
 export const Payments = mongoose.model<IPayment>("Payment", PaymentSchema);

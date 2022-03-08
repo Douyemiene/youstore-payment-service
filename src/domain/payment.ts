@@ -1,6 +1,13 @@
+export enum Status {
+  PENDING = "Pending",
+  SUCCESS = "Success",
+  FAILURE = "Failure",
+}
+
 export interface IPaymentProps {
   reference: string;
-  status: boolean | null;
+  status: Status;
+  amount: number;
 }
 
 export class Payment {

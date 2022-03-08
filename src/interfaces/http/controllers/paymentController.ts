@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { IMessenger } from "../../../infra/messaging/messenger";
 import PaymentUseCase from "../../../usecases/PaymentUseCase";
+import { Status } from "../../../domain/payment";
 import crypto from "crypto";
 const axios = require("axios").default;
 
@@ -32,10 +33,11 @@ export class PaymentController {
       })
       .then(async (result) => {
         const { status, reference } = result.data.data;
-        // console.log("res", status);
-        // console.log("res", reference);
         if (status === "success") {
-          await this.paymentUseCase.findByRefAndUpdateStatus(reference, true);
+          await this.paymentUseCase.findByRefAndUpdateStatus(
+            reference,
+            Status.SUCCESS
+          );
           res.json({
             success: true,
             message: "Payment was successfully processed",
@@ -43,14 +45,16 @@ export class PaymentController {
           });
         } else {
           //status == 'failed'
-          console.log("failure", status);
-          await this.paymentUseCase.findByRefAndUpdateStatus(reference, false);
+          await this.paymentUseCase.findByRefAndUpdateStatus(
+            reference,
+            Status.FAILURE
+          );
           this.messenger.assertQueue("payment_failure");
           this.messenger.sendToQueue("payment_failure", { ref: reference });
 
           res.json({
             success: false,
-            message: "Payment was not processed successfully",
+            message: "Payment was not processed",
             data: reference,
           });
         }
@@ -66,13 +70,17 @@ export class PaymentController {
       .createHmac("sha512", secret)
       .update(JSON.stringify(req.body))
       .digest("hex");
-    console.log("hash", hash);
+
     if (hash == req.headers["x-paystack-signature"]) {
       var { event } = req.body;
       if ((event = "charge.success")) {
         const ref = req.body.data.reference;
         try {
-          await this.paymentUseCase.findByRefAndUpdateStatus(ref, true);
+          await this.paymentUseCase.findByRefAndUpdateStatus(
+            ref,
+            Status.SUCCESS
+          );
+
           this.messenger.assertQueue("payment_success");
           this.messenger.sendToQueue("payment_success", { ref });
           res.status(200).send({ success: true });

@@ -1,5 +1,5 @@
 import { IPaymentRepo } from "../infra/repositories/payments";
-import { IPaymentProps, Payment } from "../domain/payment";
+import { IPaymentProps, Payment, Status } from "../domain/payment";
 import { IPayment } from "../infra/database/models/payments";
 
 export class PaymentUsecase {
@@ -27,14 +27,12 @@ export class PaymentUsecase {
 
   async findByRefAndUpdateStatus(
     reference: string,
-    status: boolean
+    status: Status
   ): Promise<void> {
-    //console.log("update uscase");
     const payment = await this.paymentRepo.findByRefAndUpdate(
       reference,
       status
     );
-    //.log("update finished");
   }
 }
 
