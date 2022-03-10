@@ -33,30 +33,39 @@ export class PaymentController {
       })
       .then(async (result) => {
         const { status, reference } = result.data.data;
-        if (status === "success") {
-          await this.paymentUseCase.findByRefAndUpdateStatus(
-            reference,
-            Status.SUCCESS
-          );
-          res.json({
-            success: true,
-            message: "Payment was successfully processed",
-            data: reference,
-          });
-        } else {
-          //status == 'failed'
-          await this.paymentUseCase.findByRefAndUpdateStatus(
-            reference,
-            Status.FAILURE
-          );
-          this.messenger.assertQueue("payment_failure");
-          this.messenger.sendToQueue("payment_failure", { ref: reference });
+        const paidAmt = result.data.data.amount;
 
-          res.json({
-            success: false,
-            message: "Payment was not processed",
-            data: reference,
-          });
+        const paymentRecord = await this.paymentUseCase.getpaymentByRef(
+          reference
+        );
+        //console.log(`${paymentRecord} ${paidAmt} ${status}`);
+        if (paymentRecord) {
+          if (paidAmt == paymentRecord.amount && status === "success") {
+            await this.paymentUseCase.findByRefAndUpdateStatus(
+              reference,
+              Status.SUCCESS
+            );
+            res.json({
+              success: true,
+              message: "Payment was successful",
+              data: reference,
+            });
+          } else {
+            await this.paymentUseCase.findByRefAndUpdateStatus(
+              reference,
+              Status.FAILURE
+            );
+            this.messenger.assertQueue("payment_failure");
+            this.messenger.sendToQueue("payment_failure", { ref: reference });
+
+            res.json({
+              success: false,
+              message: "Payment verification failed",
+              data: reference,
+            });
+          }
+        } else {
+          return;
         }
       })
       .catch((err) => {
@@ -75,15 +84,28 @@ export class PaymentController {
       var { event } = req.body;
       if ((event = "charge.success")) {
         const ref = req.body.data.reference;
-        try {
-          await this.paymentUseCase.findByRefAndUpdateStatus(
-            ref,
-            Status.SUCCESS
-          );
 
-          this.messenger.assertQueue("payment_success");
-          this.messenger.sendToQueue("payment_success", { ref });
-          res.status(200).send({ success: true });
+        const paymentRecord = await this.paymentUseCase.getpaymentByRef(ref);
+
+        try {
+          if (paymentRecord.amount != req.body.data.amount) {
+            await this.paymentUseCase.findByRefAndUpdateStatus(
+              ref,
+              Status.FAILURE
+            );
+            this.messenger.assertQueue("payment_failure");
+            this.messenger.sendToQueue("payment_failure", { ref });
+            res.status(200).send({ success: true });
+          } else {
+            await this.paymentUseCase.findByRefAndUpdateStatus(
+              ref,
+              Status.SUCCESS
+            );
+
+            this.messenger.assertQueue("payment_success");
+            this.messenger.sendToQueue("payment_success", { ref });
+            res.status(200).send({ success: true });
+          }
         } catch {
           res.status(400).send({ success: false });
         }
