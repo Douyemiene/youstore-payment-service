@@ -2,22 +2,23 @@ import express from "express";
 import { connectDB } from "../../../infra/database/mongoose";
 import { PaymentRouter } from "./payments";
 import container from "../../../di-setup";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: '*'
+}))
+
+app.get('/', (req,res)=> {
+  res.json({message: 'Make your orders with this API'})
+})
+
 app.use("/payments", PaymentRouter);
 
 const { messenger, paymentUseCase } = container.cradle;
 
-// app.post("/", async (req, res) => {
-//   const body = req.body;
-//   try {
-//     const data = await paymentUseCase.createPayment({ ...body, status: null });
-//     res.status(200).json({ success: true, data });
-//   } catch (err) {
-//     res.status(200).json({ success: true, err });
-//   }
-// });
+
 
 messenger.createChannel().then(() => {
   //connect database
