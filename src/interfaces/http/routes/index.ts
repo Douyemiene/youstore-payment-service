@@ -11,10 +11,10 @@ app.use(cors({
 }))
 
 app.get('/', (req,res)=> {
-  res.json({message: 'Make your orders with this API'})
+  res.json({message: 'Make your Payments with this API'})
 })
 
-app.use("/payments", PaymentRouter);
+app.use("/", PaymentRouter);
 
 const { messenger, paymentUseCase } = container.cradle;
 
