@@ -7,6 +7,7 @@ import {
   Lifetime,
 } from "awilix";
 import Payments from "./infra/database/models/payments";
+import Transfers from "./infra/database/models/transfers"
 import { connectDB } from "./infra/database/mongoose";
 import PaymentController from "./interfaces/http/controllers/paymentController";
 import Messenger from "./infra/messaging/messenger";
@@ -18,6 +19,7 @@ const container = createContainer({
 
 container.register({
   paymentModel: asValue(Payments),
+  transferModel: asValue(Transfers),
   paymentController: asClass(PaymentController),
   messenger: asClass(Messenger, { lifetime: Lifetime.SINGLETON }),
   // Infrastructure layer

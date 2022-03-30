@@ -14,6 +14,9 @@ PaymentRouter.post("/paystack-webhook", (req: Request, res: Response) =>
 
 PaymentRouter.use(verifyCustomer);
 
+PaymentRouter.post("/transfer", (req: Request, res: Response) =>
+paymentController.bankTransfer(req, res))
+
 PaymentRouter.get("/:id", (req: Request, res: Response) =>
   paymentController.getpaymentById(req, res)
 );
