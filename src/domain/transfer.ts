@@ -5,7 +5,7 @@ export enum Status {
   }
   
   export interface ITransferProps {
-    reference: string;
+
     status: Status;
     amount: number;
     customerId: String

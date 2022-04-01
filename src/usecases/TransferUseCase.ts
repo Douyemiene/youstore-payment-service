@@ -20,10 +20,6 @@ export class TransferUsecase {
     return transfer;
   }
 
-  async gettransferByRef(id: string): Promise<ITransfer | null> {
-    const transfer = await this.transferRepo.getTransferByRef(id);
-    return transfer;
-  }
 
   async findByRefAndUpdateStatus(
     reference: string,

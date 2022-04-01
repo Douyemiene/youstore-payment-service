@@ -4,7 +4,6 @@ import { ITransfer } from "../database/models/transfers";
 
 export interface ITransferRepo {
   save(transfer: ITransferProps): Promise<string>;
-  getTransferByRef(reference: string): Promise<ITransfer | null>;
   getTransferById(id: string): Promise<ITransfer | null>;
   findByRefAndUpdate(id: string, transferStatus: Status): Promise<ITransfer | null>;
 }
@@ -22,10 +21,7 @@ export class TransferRepo implements ITransferRepo {
     return _id.toString();
   }
 
-  async getTransferByRef(reference: string): Promise<ITransfer | null> {
-    const transfer = await this.transfers.findOne({ reference }).exec();
-    return transfer;
-  }
+ 
 
   async getTransferById(id: string): Promise<ITransfer | null> {
     const transfer = await this.transfers.findById(id).exec();

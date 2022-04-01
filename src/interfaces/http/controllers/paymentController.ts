@@ -79,13 +79,9 @@ export class PaymentController {
   }
 
   async bankTransfer(req: Request, res: Response) {
-    // const account_number = '0061009733'
-    // const bank_code = '063'
     const reference = ''
-    // const amount = 1000
-    // const customerId = 'douyeszn'
     const {account_number, bank_code, amount, customerId, name} = req.body
-    const transferID = await this.transferUseCase.createTransfer({reference,amount,customerId, status: Status.PENDING})
+    const transferID = await this.transferUseCase.createTransfer({amount,customerId, status: Status.PENDING})
 
      try{
       const resolveAccount = await axios
