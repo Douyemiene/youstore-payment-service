@@ -121,9 +121,9 @@ export class PaymentController {
         `https://api.paystack.co/transfer`,
         {
           source: "balance", 
-          amount: 100, 
+          amount, 
           recipient: recipient_code, 
-          reason: "Holiday Flexing",
+          reason: "Youstore payment",
           reference: transferID
         },
         {
@@ -159,12 +159,13 @@ export class PaymentController {
       console.log('event',event);
       let ref = req.body.data.reference;
       console.log('ref',ref)
+      try{
       if ((event == "charge.success")) {
         
 
         const paymentRecord = await this.paymentUseCase.getpaymentByRef(ref);
 
-        try {
+        
           if (paymentRecord.amount != req.body.data.amount) {
             await this.paymentUseCase.findByRefAndUpdateStatus(
               ref,
@@ -184,40 +185,32 @@ export class PaymentController {
             res.status(200).send({ success: true });
             return
           }
-        } catch {
-          res.status(400).send({ success: false });
-          return
-        }
-      }else if ((event == "transfer.success")) {
-        //change transfer status to success
-        //ref is not an obj id?
-        //handle sending double response in webhook
-        console.log('transfer success', ref)
         
+      }else if ((event == "transfer.success")) {
         const withdraw = await this.transferUseCase.findByRefAndUpdateStatus(
           ref,
           Status.SUCCESS
         );
-        //const withdraw = await this.transferUseCase.gettransferById(ref)
-        console.log('success', withdraw)
         this.messenger.assertQueue("withdrawal_success");
         this.messenger.sendToQueue("withdrawal_success", { withdraw });
         res.status(200).send({ success: true });
         return
       }else if ((event == "transfer.failed")) {
-        //change transfer status to failed
-    
-        console.log('transfer failed', ref)
+        //create a func that does this
         const withdraw = await this.transferUseCase.findByRefAndUpdateStatus(
               ref,
               Status.FAILURE
             );
-            console.log('success', withdraw)
             this.messenger.assertQueue("withdrawal_failure");
             this.messenger.sendToQueue("withdrawal_failure", { withdraw });
             res.status(200).send({ success: true });
             return
-      }
+      }}
+    catch {
+      res.status(400).send({ success: false });
+      return
+    }
+      
     }
 
     res.status(400).send({ success: false });
