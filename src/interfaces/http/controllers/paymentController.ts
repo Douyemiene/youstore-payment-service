@@ -31,7 +31,7 @@ export class PaymentController {
       .get(`https://api.paystack.co/transaction/verify/${reference}`, {
         headers: {
           authorization:
-            "Bearer sk_test_55ceccf870fc585f49df71a6decd01ff457c583c",
+            `Bearer ${process.env.PAYSTACK_SECRET}`,
           "content-type": "application/json",
           "cache-control": "no-cache",
         },
@@ -84,7 +84,7 @@ export class PaymentController {
     const reference = ''
     // const amount = 1000
     // const customerId = 'douyeszn'
-    const {account_number, bank_code, amount, customerId} = req.body
+    const {account_number, bank_code, amount, customerId, name} = req.body
     const transferID = await this.transferUseCase.createTransfer({reference,amount,customerId, status: Status.PENDING})
 
      try{
@@ -92,19 +92,19 @@ export class PaymentController {
       .get(`https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`, {
         headers: {
           authorization:
-            "Bearer sk_test_55ceccf870fc585f49df71a6decd01ff457c583c",
+            `Bearer ${process.env.PAYSTACK_SECRET}`,
           "content-type": "application/json",
           "cache-control": "no-cache",
         },
       })
       // Account number resolved
-      //console.log(resolveAccount.data.message)
+      console.log(resolveAccount.data.message)
 
       const recipientResponse = await axios.post(
         `https://api.paystack.co/transferrecipient`,
         {
           type: "nuban", 
-          name: "Victor Onyindouye Miene", 
+          name, 
           account_number: account_number, 
           bank_code: bank_code, 
           currency: "NGN"
@@ -112,7 +112,7 @@ export class PaymentController {
         {
           headers: {
             authorization:
-              "Bearer sk_test_55ceccf870fc585f49df71a6decd01ff457c583c",
+              `Bearer ${process.env.PAYSTACK_SECRET}`,
             "content-type": "application/json",
             "cache-control": "no-cache",
           },
@@ -120,7 +120,7 @@ export class PaymentController {
       );
 
       const recipient_code = recipientResponse.data.data.recipient_code
-      //console.log('recipent code', recipient_code )
+      console.log('recipent code', recipient_code )
       const makeTransfer = await axios.post(
         `https://api.paystack.co/transfer`,
         {
@@ -133,7 +133,7 @@ export class PaymentController {
         {
           headers: {
             authorization:
-              "Bearer sk_test_55ceccf870fc585f49df71a6decd01ff457c583c",
+              `Bearer ${process.env.PAYSTACK_SECRET}`,
             "content-type": "application/json",
             "cache-control": "no-cache",
           },
@@ -160,8 +160,10 @@ export class PaymentController {
 
     if (hash == req.headers["x-paystack-signature"]) {
       var { event } = req.body;
-      const ref = req.body.data.reference;
-      if ((event = "charge.success")) {
+      console.log('event',event);
+      let ref = req.body.data.reference;
+      console.log('ref',ref)
+      if ((event == "charge.success")) {
         
 
         const paymentRecord = await this.paymentUseCase.getpaymentByRef(ref);
@@ -184,33 +186,45 @@ export class PaymentController {
             this.messenger.assertQueue("payment_success");
             this.messenger.sendToQueue("payment_success", { ref });
             res.status(200).send({ success: true });
+            return
           }
         } catch {
           res.status(400).send({ success: false });
+          return
         }
-      }
-
-      if ((event = "transfer.success")) {
+      }else if ((event == "transfer.success")) {
         //change transfer status to success
+        //ref is not an obj id?
+        //handle sending double response in webhook
+        console.log('transfer success', ref)
+        
         await this.transferUseCase.findByRefAndUpdateStatus(
           ref,
           Status.SUCCESS
         );
-        this.messenger.assertQueue("transfer_success");
-        this.messenger.sendToQueue("transfer_success", { ref });
+        const withdraw = await this.transferUseCase.gettransferById(ref)
+        console.log('success', withdraw)
+        this.messenger.assertQueue("withdrawal_success");
+        this.messenger.sendToQueue("withdrawal_success", { withdraw });
         res.status(200).send({ success: true });
-      }
-      if ((event = "transfer.failed")) {
+        return
+      }else if ((event == "transfer.failed")) {
         //change transfer status to failed
+    
+        console.log('transfer failed', ref)
          await this.transferUseCase.findByRefAndUpdateStatus(
               ref,
               Status.FAILURE
             );
-            this.messenger.assertQueue("transfer_failure");
-            this.messenger.sendToQueue("transfer_failure", { ref });
+            const withdraw = await this.transferUseCase.gettransferById(ref)
+            this.messenger.assertQueue("withdrawal_failure");
+            this.messenger.sendToQueue("withdrawal_failure", { withdraw });
             res.status(200).send({ success: true });
+            return
       }
     }
+
+    res.status(400).send({ success: false });
   }
 
   async getpaymentById(req: Request, res: Response): Promise<void> {

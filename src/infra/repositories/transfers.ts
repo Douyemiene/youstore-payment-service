@@ -35,8 +35,8 @@ export class TransferRepo implements ITransferRepo {
   async findByRefAndUpdate(reference: string, status: Status): Promise<void> {
     //an array?
     try {
-      const transfer = await this.transfers.findOneAndUpdate(
-        { reference },
+      const transfer = await this.transfers.findByIdAndUpdate(
+        reference,
         { status },
         {
           new: true,
