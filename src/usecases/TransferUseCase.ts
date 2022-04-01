@@ -28,11 +28,13 @@ export class TransferUsecase {
   async findByRefAndUpdateStatus(
     reference: string,
     status: Status
-  ): Promise<void> {
+  ): Promise<ITransfer | null> {
     const transfer = await this.transferRepo.findByRefAndUpdate(
       reference,
       status
     );
+
+    return transfer
   }
 }
 

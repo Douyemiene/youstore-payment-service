@@ -198,11 +198,11 @@ export class PaymentController {
         //handle sending double response in webhook
         console.log('transfer success', ref)
         
-        await this.transferUseCase.findByRefAndUpdateStatus(
+        const withdraw = await this.transferUseCase.findByRefAndUpdateStatus(
           ref,
           Status.SUCCESS
         );
-        const withdraw = await this.transferUseCase.gettransferById(ref)
+        //const withdraw = await this.transferUseCase.gettransferById(ref)
         console.log('success', withdraw)
         this.messenger.assertQueue("withdrawal_success");
         this.messenger.sendToQueue("withdrawal_success", { withdraw });
@@ -212,11 +212,11 @@ export class PaymentController {
         //change transfer status to failed
     
         console.log('transfer failed', ref)
-         await this.transferUseCase.findByRefAndUpdateStatus(
+        const withdraw = await this.transferUseCase.findByRefAndUpdateStatus(
               ref,
               Status.FAILURE
             );
-            const withdraw = await this.transferUseCase.gettransferById(ref)
+            console.log('success', withdraw)
             this.messenger.assertQueue("withdrawal_failure");
             this.messenger.sendToQueue("withdrawal_failure", { withdraw });
             res.status(200).send({ success: true });
