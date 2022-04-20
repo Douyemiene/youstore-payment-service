@@ -12,10 +12,10 @@ PaymentRouter.post("/paystack-webhook", (req: Request, res: Response) =>
   paymentController.consumePaystackEvent(req, res)
 );
 
-PaymentRouter.use(verifyCustomer);
-
 PaymentRouter.post("/transfer", (req: Request, res: Response) =>
 paymentController.bankTransfer(req, res))
+
+PaymentRouter.use(verifyCustomer);
 
 PaymentRouter.get("/:id", (req: Request, res: Response) =>
   paymentController.getpaymentById(req, res)
@@ -29,9 +29,5 @@ PaymentRouter.get("/verify/:reference", (req: Request, res: Response) =>
   paymentController.verifyPayment(req, res)
 );
 
-// PaymentRouter.use(sendBadRequestErrorResponse);
-// // PaymentRouter.get("/hey/:id", (req: Request, res: Response) =>
-// //   paymentController.findByIdAndUpdate(req, res)
-// // );
 
 export { PaymentRouter };
