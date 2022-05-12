@@ -24,8 +24,9 @@ messenger.createChannel().then(() => {
   //connect database
   connectDB();
   //listen for requests
-  messenger.assertQueue("order_created");
-  messenger.consumeOrderCreated();
+  //messenger.assertQueue("order_created");
+  //messenger.consumeOrder()
+  //messenger.consumeOrderCreated();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
