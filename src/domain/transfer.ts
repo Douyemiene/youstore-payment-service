@@ -5,10 +5,11 @@ export enum Status {
   }
   
   export interface ITransferProps {
-
     status: Status;
     amount: number;
     customerId: String
+    accName: string,
+    accNo: string
   }
   
   export class Transfer {

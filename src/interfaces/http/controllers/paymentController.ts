@@ -25,6 +25,30 @@ export class PaymentController {
     this.messenger = messenger;
   }
 
+  //get a payment by its id
+  async getpaymentById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    try {
+      const order = await this.paymentUseCase.getpaymentById(id);
+      res.status(200).json({ success: true, data: order });
+    } catch ({ name, message }) {
+      res.status(404).json({ success: false, data: null });
+    }
+  }
+
+  //get a payment by its reference
+  async getpaymentByRef(req: Request, res: Response): Promise<void> {
+    const { reference } = req.params;
+    try {
+      const order = await this.paymentUseCase.getpaymentByRef(reference);
+      if (!order) {
+        res.status(404).json({ success: true, data: null });
+      }
+      res.status(200).json({ success: true, data: order });
+    } catch ({ name, message }) {
+      res.status(404).json({ success: false, data: null });
+    }
+  }
   async verifyPayment(req: Request, res: Response) {
     const reference = req.params.reference;
     await axios
@@ -80,8 +104,8 @@ export class PaymentController {
 
   async bankTransfer(req: Request, res: Response) {
     const reference = ''
-    const {account_number, bank_code, amount, customerId, name} = req.body
-    const transferID = await this.transferUseCase.createTransfer({amount,customerId, status: Status.PENDING})
+    const {acc_name, account_number, bank_code, amount, customerId, name} = req.body
+    const transferID = await this.transferUseCase.createTransfer({amount,customerId, status: Status.PENDING, accName: acc_name, accNo: account_number})
 
      try{
       const resolveAccount = await axios
@@ -94,7 +118,7 @@ export class PaymentController {
         },
       })
       // Account number resolved
-      console.log(resolveAccount.data.message)
+      //console.log(resolveAccount.data.message)
 
       const recipientResponse = await axios.post(
         `https://api.paystack.co/transferrecipient`,
@@ -116,7 +140,7 @@ export class PaymentController {
       );
 
       const recipient_code = recipientResponse.data.data.recipient_code
-      console.log('recipent code', recipient_code )
+      //console.log('recipent code', recipient_code )
       const makeTransfer = await axios.post(
         `https://api.paystack.co/transfer`,
         {
@@ -216,28 +240,7 @@ export class PaymentController {
     res.status(400).send({ success: false });
   }
 
-  async getpaymentById(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
-    try {
-      const order = await this.paymentUseCase.getpaymentById(id);
-      res.status(200).json({ success: true, data: order });
-    } catch ({ name, message }) {
-      res.status(404).json({ success: false, data: null });
-    }
-  }
-
-  async getpaymentByRef(req: Request, res: Response): Promise<void> {
-    const { reference } = req.params;
-    try {
-      const order = await this.paymentUseCase.getpaymentByRef(reference);
-      if (!order) {
-        res.status(404).json({ success: true, data: null });
-      }
-      res.status(200).json({ success: true, data: order });
-    } catch ({ name, message }) {
-      res.status(404).json({ success: false, data: null });
-    }
-  }
+  
 }
 
 export default PaymentController;
