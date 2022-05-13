@@ -16,7 +16,8 @@ const TransferSchema = new mongoose.Schema<ITransfer>({
   accName: String,
   accNo: String
 
-});
+},
+{timestamps: true});
 
 export const Transfers = mongoose.model<ITransfer>("Transfer", TransferSchema);
 export default Transfers;

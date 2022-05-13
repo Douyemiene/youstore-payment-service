@@ -10,6 +10,7 @@ import Payments from "./infra/database/models/payments";
 import Transfers from "./infra/database/models/transfers"
 import { connectDB } from "./infra/database/mongoose";
 import PaymentController from "./interfaces/http/controllers/paymentController";
+import TransferController from "./interfaces/http/controllers/transferController";
 import Messenger from "./infra/messaging/messenger";
 //import { Server } from "./interfaces/http/routes/index";
 
@@ -21,6 +22,7 @@ container.register({
   paymentModel: asValue(Payments),
   transferModel: asValue(Transfers),
   paymentController: asClass(PaymentController),
+  transferController: asClass(TransferController),
   messenger: asClass(Messenger, { lifetime: Lifetime.SINGLETON }),
   // Infrastructure layer
   connectDB: asFunction(connectDB),

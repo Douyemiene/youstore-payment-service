@@ -49,6 +49,7 @@ export class PaymentController {
       res.status(404).json({ success: false, data: null });
     }
   }
+  
   async verifyPayment(req: Request, res: Response) {
     const reference = req.params.reference;
     await axios

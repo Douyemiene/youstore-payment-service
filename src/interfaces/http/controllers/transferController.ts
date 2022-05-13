@@ -3,8 +3,6 @@ import { IMessenger } from "../../../infra/messaging/messenger";
 import TransferUseCase from "../../../usecases/TransferUseCase";
 import { Status } from "../../../domain/transfer";
 
-const axios = require("axios").default;
-
 export class TransferController {
   transferUseCase: TransferUseCase;
   messenger: IMessenger;
@@ -17,6 +15,18 @@ export class TransferController {
   }) {
     this.transferUseCase = transferUseCase;
     this.messenger = messenger;
+  }
+
+  
+  
+  async getTransferByCustomer(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    try {
+      const orders = await this.transferUseCase.gettransferByCustomer(id);
+      res.status(200).json({ success: true, data: orders});
+    } catch ({ name, message }) {
+      res.status(404).json({ success: false, data: null });
+    }
   }
 
   async gettransferById(req: Request, res: Response): Promise<void> {

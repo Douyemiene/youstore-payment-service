@@ -6,6 +6,7 @@ export interface ITransferRepo {
   save(transfer: ITransferProps): Promise<string>;
   getTransferById(id: string): Promise<ITransfer | null>;
   findByRefAndUpdate(id: string, transferStatus: Status): Promise<ITransfer | null>;
+  getTransferByCustomer(id: string): Promise<ITransfer[] | null> 
 }
 
 export class TransferRepo implements ITransferRepo {
@@ -25,6 +26,11 @@ export class TransferRepo implements ITransferRepo {
 
   async getTransferById(id: string): Promise<ITransfer | null> {
     const transfer = await this.transfers.findById(id).exec();
+    return transfer;
+  }
+
+  async getTransferByCustomer(id: string): Promise<ITransfer[] | null> {
+    const transfer: ITransfer[] = await this.transfers.find({customerId: id}).exec();
     return transfer;
   }
 

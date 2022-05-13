@@ -21,6 +21,11 @@ export class TransferUsecase {
   }
 
 
+  async gettransferByCustomer(id: string): Promise<ITransfer[] | null> {
+    const transfer = await this.transferRepo.getTransferByCustomer(id);
+    return transfer;
+  }
+
   async findByRefAndUpdateStatus(
     reference: string,
     status: Status
