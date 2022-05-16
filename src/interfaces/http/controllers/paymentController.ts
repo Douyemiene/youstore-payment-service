@@ -68,7 +68,7 @@ export class PaymentController {
         const paymentRecord = await this.paymentUseCase.getpaymentByRef(
           reference
         );
-        //console.log(`${paymentRecord} ${paidAmt} ${status}`);
+        
         if (paymentRecord) {
           if (paidAmt == paymentRecord.amount && status === "success") {
             await this.paymentUseCase.findByRefAndUpdateStatus(
@@ -123,7 +123,6 @@ export class PaymentController {
         },
       })
       // Account number resolved
-      //console.log(resolveAccount.data.message)
 
       const recipientResponse = await axios.post(
         `https://api.paystack.co/transferrecipient`,
@@ -145,7 +144,6 @@ export class PaymentController {
       );
 
       const recipient_code = recipientResponse.data.data.recipient_code
-      //console.log('recipent code', recipient_code )
       const makeTransfer = await axios.post(
         `https://api.paystack.co/transfer`,
         {
@@ -166,11 +164,10 @@ export class PaymentController {
       );
 
       
-      //console.log('makeTransfer', makeTransfer )
+      
 
       res.status(200).json({message:'transfer successful',data:{reference:transferID}})
     }catch(e){
-      //console.log({e})
       res.status(400).json({message:'transfer failed',data:null})
     }
       
@@ -185,21 +182,20 @@ export class PaymentController {
 
     if (hash == req.headers["x-paystack-signature"]) {
       var { event } = req.body;
-      console.log('event',event);
+      
       let ref = req.body.data.reference;
-      console.log('ref',ref)
+      
       try{
       if ((event == "charge.success")) {
         
-
-        const paymentRecord = await this.paymentUseCase.getpaymentByRef(ref);
-
         
+        const paymentRecord = await this.paymentUseCase.getpaymentByRef(ref);
           if (paymentRecord.amount != req.body.data.amount) {
             await this.paymentUseCase.findByRefAndUpdateStatus(
               ref,
               Status.FAILURE
             );
+            
             // this.messenger.assertQueue("payment_failure");
             // this.messenger.sendToQueue("payment_failure", { ref });
             this.messenger.publishToExchange('paymentEvents', 'payments.status.failed', {
@@ -207,6 +203,7 @@ export class PaymentController {
             })
             
             res.status(200).send({ success: true });
+            return
           } else {
             await this.paymentUseCase.findByRefAndUpdateStatus(
               ref,
@@ -215,10 +212,10 @@ export class PaymentController {
 
             // this.messenger.assertQueue("payment_success");
             // this.messenger.sendToQueue("payment_success", { ref });
-
             this.messenger.publishToExchange('paymentEvents', 'payments.status.success', {
               ref
             })
+            
             res.status(200).send({ success: true });
             return
           }
