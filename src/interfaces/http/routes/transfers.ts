@@ -5,7 +5,7 @@ const { transferController} = container.cradle;
 
 const TransferRouter = Router();
 
-TransferRouter.post("/merchant/:id", (req: Request, res: Response) =>
+TransferRouter.get("/merchant/:id", (req: Request, res: Response) =>
 transferController.getTransferByCustomer(req, res))
 
 
