@@ -85,8 +85,12 @@ export class PaymentController {
               reference,
               Status.FAILURE
             );
-            this.messenger.assertQueue("payment_failure");
-            this.messenger.sendToQueue("payment_failure", { ref: reference });
+            // this.messenger.assertQueue("payment_failure");
+            // this.messenger.sendToQueue("payment_failure", { ref: reference });
+
+            this.messenger.publishToExchange('paymentEvents', 'payments.status.failed', {
+              ref: reference
+            })
 
             res.json({
               success: false,
@@ -196,8 +200,12 @@ export class PaymentController {
               ref,
               Status.FAILURE
             );
-            this.messenger.assertQueue("payment_failure");
-            this.messenger.sendToQueue("payment_failure", { ref });
+            // this.messenger.assertQueue("payment_failure");
+            // this.messenger.sendToQueue("payment_failure", { ref });
+            this.messenger.publishToExchange('paymentEvents', 'payments.status.failed', {
+              ref
+            })
+            
             res.status(200).send({ success: true });
           } else {
             await this.paymentUseCase.findByRefAndUpdateStatus(
@@ -205,8 +213,12 @@ export class PaymentController {
               Status.SUCCESS
             );
 
-            this.messenger.assertQueue("payment_success");
-            this.messenger.sendToQueue("payment_success", { ref });
+            // this.messenger.assertQueue("payment_success");
+            // this.messenger.sendToQueue("payment_success", { ref });
+
+            this.messenger.publishToExchange('paymentEvents', 'payments.status.success', {
+              ref
+            })
             res.status(200).send({ success: true });
             return
           }
@@ -218,6 +230,7 @@ export class PaymentController {
         );
         this.messenger.assertQueue("withdrawal_success");
         this.messenger.sendToQueue("withdrawal_success", { withdraw });
+        
         res.status(200).send({ success: true });
         return
       }else if ((event == "transfer.failed")) {

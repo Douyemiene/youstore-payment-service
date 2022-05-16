@@ -6,6 +6,7 @@ export interface IMessenger {
   createChannel(): Promise<void>;
   sendToQueue(queue: string, content: Object): void;
   assertQueue(queue: string): Promise<void>;
+  publishToExchange(exchange: string, key: string, msg: Object)
 }
 
 export class Messenger implements IMessenger {
@@ -21,9 +22,10 @@ export class Messenger implements IMessenger {
     const connection: Connection = await amqp.connect(amqp_url);
 
     this.channel = await connection.createChannel();
-    this.assertExchange('orderEvents','topic')
+    await this.assertExchange('orderEvents','topic')
+    await this.assertExchange('paymentEvents','topic')
     await this.assertQueue("payments");
-    await this.bindQueue('payments', 'orderEvents', 'order.create.#');
+    await this.bindQueue('payments', 'orderEvents', 'orders.status.created');
     this.consumeOrder()
   }
 
@@ -45,6 +47,10 @@ export class Messenger implements IMessenger {
     await this.channel.bindQueue(queue, exchange, key);
   }
 
+  async publishToExchange(exchange: string, key: string, msg: Object){
+    await this.channel.publish(exchange, key, Buffer.from(JSON.stringify(msg)));
+  }
+
   sendToQueue(queue: string, content: Object): void {
     this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(content)));
   }
@@ -54,9 +60,14 @@ export class Messenger implements IMessenger {
       "payments",
       (msg: Message | null) => {
         if (msg) {
+          
           const data = JSON.parse(msg.content.toString());
+          const routingKey = msg.fields.routingKey
+          console.log(`msg ${routingKey}`)
+          if(routingKey !== 'orders.status.created'){
+            return
+          }
           try {
-            console.log('here')
             this.paymentUseCase.createPayment({
               status: Status.PENDING,
               reference: data.orderID,
@@ -71,26 +82,6 @@ export class Messenger implements IMessenger {
     );
   }
 
-  async consumeOrderCreated() {
-    this.channel.consume(
-      "order_created",
-      (msg: Message | null) => {
-        if (msg) {
-          const data = JSON.parse(msg.content.toString());
-          try {
-            this.paymentUseCase.createPayment({
-              status: Status.PENDING,
-              reference: data.orderID,
-              amount: data.amount,
-            });
-          } catch (err) {
-            console.log("err", err);
-          }
-        }
-      },
-      { noAck: true }
-    );
-  }
-}
+ }
 
 export default Messenger;
