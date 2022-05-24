@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 //import { sendBadRequestErrorResponse } from "../reqValidation";
-import { verifyCustomer } from "../../../middlewares";
+import { verifyCustomer, verifyMerchant } from "../../../middlewares";
 import container from "../../../di-setup";
 
 const { paymentController } = container.cradle;
@@ -12,7 +12,7 @@ PaymentRouter.post("/paystack-webhook", (req: Request, res: Response) =>
   paymentController.consumePaystackEvent(req, res)
 );
 
-PaymentRouter.post("/transfer", (req: Request, res: Response) =>
+PaymentRouter.post("/transfer", verifyMerchant, (req: Request, res: Response) =>
 paymentController.bankTransfer(req, res))
 
 PaymentRouter.use(verifyCustomer);
