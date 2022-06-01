@@ -22,12 +22,13 @@ app.use("/", PaymentRouter);
 
 
 const { messenger} = container.cradle;
+const { paymentUseCase } = container.cradle
 
 
-
-messenger.createChannel().then(() => {
+messenger.createChannel().then(async () => {
   //connect database
-  connectDB();
+  await connectDB();
+  await paymentUseCase.consumeOrder()
   //listen for requests
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {

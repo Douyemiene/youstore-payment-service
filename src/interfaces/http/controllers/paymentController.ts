@@ -10,7 +10,7 @@ export class PaymentController {
   paymentUseCase: PaymentUseCase;
   transferUseCase: TransferUseCase;
   messenger: IMessenger;
-  //hey
+
   constructor({
     paymentUseCase,
     transferUseCase,
@@ -51,60 +51,24 @@ export class PaymentController {
   }
   
   async verifyPayment(req: Request, res: Response) {
-    const reference = req.params.reference;
-    await axios
-      .get(`https://api.paystack.co/transaction/verify/${reference}`, {
-        headers: {
-          authorization:
-            `Bearer ${process.env.PAYSTACK_SECRET}`,
-          "content-type": "application/json",
-          "cache-control": "no-cache",
-        },
-      })
-      .then(async (result) => {
-        const { status, reference } = result.data.data;
-        const paidAmt = result.data.data.amount;
+    const reference: string = req.params.reference;
+    try{
+      const isVerified = await this.paymentUseCase.verifyPayment(reference)
+      if(!isVerified){
+        throw Error
+      }
 
-        const paymentRecord = await this.paymentUseCase.getpaymentByRef(
-          reference
-        );
-        
-        if (paymentRecord) {
-          if (paidAmt == paymentRecord.amount && status === "success") {
-            await this.paymentUseCase.findByRefAndUpdateStatus(
-              reference,
-              Status.SUCCESS
-            );
-            res.json({
-              success: true,
-              message: "Payment was successful",
-              data: reference,
-            });
-          } else {
-            await this.paymentUseCase.findByRefAndUpdateStatus(
-              reference,
-              Status.FAILURE
-            );
-            // this.messenger.assertQueue("payment_failure");
-            // this.messenger.sendToQueue("payment_failure", { ref: reference });
-
-            this.messenger.publishToExchange('paymentEvents', 'payments.status.failed', {
-              ref: reference
-            })
-
-            res.json({
-              success: false,
-              message: "Payment verification failed",
-              data: reference,
-            });
-          }
-        } else {
-          return;
-        }
-      })
-      .catch((err) => {
-        res.json({ success: false, error: "Payment verification failed." });
-      });
+      res.json({success: true,
+        message: "Payment was successful",
+        data: reference})
+    }catch(e){
+      res.json({
+        success: false,
+        message: "Payment verification failed",
+    })
+    }
+   
+   
   }
 
   async bankTransfer(req: Request, res: Response) {
